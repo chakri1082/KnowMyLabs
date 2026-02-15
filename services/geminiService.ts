@@ -1,8 +1,7 @@
+import { GoogleGenAI, Type } from '@google/genai';
+import { ExplanationResponse } from '../types';
 
-import { GoogleGenAI, Type } from "@google/genai";
-import { ExplanationResponse } from "../types";
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY || '' });
 
 const SYSTEM_INSTRUCTION = `
 You are a friendly, expert medical explainer. 
@@ -20,18 +19,25 @@ TONE: Friendly, expert, calm.
 STRICT RULE: Include the disclaimer "Educational purposes only" in spirit. Always emphasize that this is educational context, not a diagnosis or medical advice.
 `;
 
-export const getMedicalExplanations = async (input: string | { data: string, mimeType: string }): Promise<ExplanationResponse> => {
+export const getMedicalExplanations = async (
+  input: string | { data: string; mimeType: string }
+): Promise<ExplanationResponse> => {
   const model = await ai.models.generateContent({
     model: 'gemini-3-flash-preview',
-    contents: typeof input === 'string' 
-      ? [{ parts: [{ text: input }] }]
-      : { parts: [
-          { inlineData: { data: input.data, mimeType: input.mimeType } },
-          { text: "Extract all tests. For each, include the value, unit, and reference range found. If multiple historical values exist, focus on the most recent but mention the trend in personalInsight." }
-        ]},
+    contents:
+      typeof input === 'string'
+        ? [{ parts: [{ text: input }] }]
+        : {
+            parts: [
+              { inlineData: { data: input.data, mimeType: input.mimeType } },
+              {
+                text: 'Extract all tests. For each, include the value, unit, and reference range found. If multiple historical values exist, focus on the most recent but mention the trend in personalInsight.',
+              },
+            ],
+          },
     config: {
       systemInstruction: SYSTEM_INSTRUCTION,
-      responseMimeType: "application/json",
+      responseMimeType: 'application/json',
       responseSchema: {
         type: Type.OBJECT,
         properties: {
@@ -45,9 +51,9 @@ export const getMedicalExplanations = async (input: string | { data: string, mim
                 unit: { type: Type.STRING },
                 refMin: { type: Type.NUMBER },
                 refMax: { type: Type.NUMBER },
-                interpretation: { 
-                  type: Type.STRING, 
-                  description: "Must be LOW, NORMAL, HIGH, or NOT_APPLICABLE" 
+                interpretation: {
+                  type: Type.STRING,
+                  description: 'Must be LOW, NORMAL, HIGH, or NOT_APPLICABLE',
                 },
                 whatItIs: { type: Type.STRING },
                 whatItMeasures: { type: Type.STRING },
@@ -60,15 +66,20 @@ export const getMedicalExplanations = async (input: string | { data: string, mim
                 doctorAdvice: { type: Type.STRING },
               },
               required: [
-                "testName", "whatItIs", "upReasons", "downReasons", 
-                "analogy", "personalInsight", "doctorAdvice"
-              ]
-            }
-          }
+                'testName',
+                'whatItIs',
+                'upReasons',
+                'downReasons',
+                'analogy',
+                'personalInsight',
+                'doctorAdvice',
+              ],
+            },
+          },
         },
-        required: ["explanations"]
-      }
-    }
+        required: ['explanations'],
+      },
+    },
   });
 
   const text = model.text || '{"explanations":[]}';
