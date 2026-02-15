@@ -21,7 +21,12 @@ const App: React.FC = () => {
       setState(AppState.SUCCESS);
     } catch (error) {
       console.error(error);
-      setErrorMessage('Oops! We had some trouble understanding that. Please try again with a clearer term.');
+      let message = 'Oops! We had some trouble understanding that. Please try again with a clearer term.';
+      // A small developer-friendly hint when the API key is missing.
+      if (import.meta.env.DEV && !import.meta.env.VITE_GEMINI_API_KEY) {
+        message = 'It looks like the Gemini API key is missing. Please set VITE_GEMINI_API_KEY in your .env file.';
+      }
+      setErrorMessage(message);
       setState(AppState.ERROR);
     }
   };
@@ -35,7 +40,11 @@ const App: React.FC = () => {
       setState(AppState.SUCCESS);
     } catch (error) {
       console.error(error);
-      setErrorMessage('We couldn\'t read that report. Make sure it\'s a clear photo of a lab result.');
+      let message = 'We couldn\'t read that report. Make sure it\'s a clear photo of a lab result.';
+      if (import.meta.env.DEV && !import.meta.env.VITE_GEMINI_API_KEY) {
+        message = 'It looks like the Gemini API key is missing. Please set VITE_GEMINI_API_KEY in your .env file.';
+      }
+      setErrorMessage(message);
       setState(AppState.ERROR);
     }
   };
