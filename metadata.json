@@ -1,0 +1,8 @@
+
+{
+  "name": "KnowMyLabs",
+  "description": "A friendly, anxiety-reducing medical jargon and blood test explainer designed to simplify health concepts without providing medical advice.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
